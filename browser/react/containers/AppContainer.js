@@ -23,6 +23,9 @@ export default class AppContainer extends Component {
     this.prev = this.prev.bind(this);
     this.selectAlbum = this.selectAlbum.bind(this);
     this.deselectAlbum = this.deselectAlbum.bind(this);
+
+    // artists
+    this.getArtists = this.getArtists.bind(this)
     this.selectArtist = this.selectArtist.bind(this);
   }
 
@@ -30,13 +33,6 @@ export default class AppContainer extends Component {
     axios.get('/api/albums/')
       .then(res => res.data)
       .then(album => this.onLoad(convertAlbums(album)));
-
-      axios.get('/api/artists/')
-      .then(res => res.data)
-      .then(artists => this.setState({artists: artists}));
-
-
-
 
     AUDIO.addEventListener('ended', () =>
       this.next());
@@ -109,21 +105,32 @@ export default class AppContainer extends Component {
   deselectAlbum() {
     this.setState({ selectedAlbum: {} });
   }
+
+  getArtists() {
+    axios.get('/api/artists/')
+      .then(res => res.data)
+      .then(artists => this.setState({ artists: artists }));
+  }
+
   // showing single artist
 
   selectArtist(artistId) {
-      axios.get(`/api/artists/${artistId}/albums`)
-        .then(res => res.data)
-        .then(album =>
-          this.setState({
+    const promises = [
+      axios.get(`/api/artists/${artistId}`),
+      axios.get(`/api/artists/${artistId}/albums`),
+      axios.get(`/api/artists/${artistId}/songs`),
+    ]
+    Promise.all(promises)
+      .then(result => {
+        this.setState({
           selectedArtist: {
-            albums: convertAlbums(album)
+            name: result[0].data.name,
+            albums: convertAlbums(result[1].data),
+            songs: result[2].data
           }
-        }));
-    }
-
-
-
+        })
+      })
+  }
 
   render() {
     return (
@@ -146,6 +153,7 @@ export default class AppContainer extends Component {
             albums: this.state.albums,
             selectAlbum: this.selectAlbum,
 
+            getArtists: this.getArtists,
             artists: this.state.artists,
             selectArtist: this.selectArtist,
             artist: this.state.selectedArtist

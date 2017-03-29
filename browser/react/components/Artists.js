@@ -3,6 +3,8 @@ import { Link } from 'react-router'
 
 const Artists = (props) => {
 
+  props.getArtists()
+
   const artists = props.artists;
 
   return (

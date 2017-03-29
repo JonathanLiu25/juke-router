@@ -4,7 +4,6 @@ import { Link } from 'react-router'
 const Albums = (props) => {
 
   const albums = props.albums;
-  console.log('Hi from albums')
 
   return (
 
